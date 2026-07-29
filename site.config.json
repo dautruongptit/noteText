@@ -1,0 +1,10 @@
+{
+  "description": "Effortlessly create, manage, and share travel photo albums with a modern interface, allowing users to upload, organize, and view photos across devices.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
