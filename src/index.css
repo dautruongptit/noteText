@@ -1,0 +1,211 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+:root { font-family: Manrope, Arial, sans-serif; color: #111; background: #ececea; }
+button { font: inherit; cursor: pointer; }
+
+/* ── App shell ── */
+.app { --bg:#f7f7f5; --surface:#fff; --edge:#deded9; --soft:#efefec; --text:#151515; --muted:#7e7e78; --editor:#fff; --accent:#e85d24; --synced:#3a9e63; min-height:100vh; display:flex; flex-direction:column; color:var(--text); background:var(--bg); transition:.2s ease; }
+.app.dark { --bg:#161616; --surface:#1d1d1c; --edge:#353533; --soft:#272725; --text:#f5f5f2; --muted:#979793; --editor:#151514; --synced:#4cba79; }
+
+/* ── Topbar ── */
+.topbar { height:54px; flex:none; display:flex; align-items:stretch; border-bottom:1px solid var(--edge); background:var(--surface); }
+.brand { width:185px; flex:none; border:0; border-right:1px solid var(--edge); background:transparent; display:flex; gap:9px; align-items:center; padding:0 20px; font-weight:800; letter-spacing:-.7px; }
+.brand-mark { display:grid; place-items:center; color:var(--surface); background:var(--text); font-family:"DM Mono"; width:22px; height:22px; font-size:12px; border-radius:4px; }
+
+/* ── Tabs ── */
+.tabs { min-width:0; display:flex; overflow:auto; scrollbar-width:none; }
+.tab,.new-tab { border:0; border-right:1px solid var(--edge); background:var(--soft); color:var(--muted); padding:0 13px; display:flex; gap:9px; align-items:center; white-space:nowrap; font-size:12px; transition:.15s; }
+.tab:hover { background:var(--surface); color:var(--text); }
+.tab.active { color:var(--text); background:var(--editor); box-shadow:inset 0 2px 0 var(--accent); }
+.file-glyph,.doc-icon { font-family:"DM Mono"; font-size:14px; color:var(--accent); }
+.close { opacity:0; font-size:18px; line-height:12px; color:var(--muted); }
+.tab:hover .close,.tab.active .close { opacity:1; }
+.unsaved { width:6px; height:6px; border-radius:50%; background:var(--accent); }
+.new-tab { font-size:22px; padding:0 16px; }
+
+/* ── Top actions ── */
+.top-actions { margin-left:auto; display:flex; align-items:center; padding:0 13px; gap:7px; background:var(--surface); }
+.save-btn,.mode { color:var(--text); border:1px solid var(--edge); background:transparent; border-radius:4px; height:30px; padding:0 10px; font-size:12px; }
+.mode { font-size:17px; width:31px; padding:0; }
+.save-btn:hover,.mode:hover { border-color:var(--text); }
+
+/* Drive button */
+.drive-btn { display:grid; place-items:center; width:31px; height:30px; border:1px solid var(--edge); border-radius:4px; background:transparent; color:var(--muted); font-size:15px; transition:.15s; }
+.drive-btn:hover { border-color:var(--text); color:var(--text); }
+.drive-btn.connected { color:var(--synced); border-color:color-mix(in srgb,var(--synced) 30%,transparent); }
+.drive-btn.syncing { color:var(--accent); border-color:color-mix(in srgb,var(--accent) 30%,transparent); }
+.drive-btn.error { color:#d64d36; }
+
+/* ── Workspace — height must be explicit for sidebar scroll to work ── */
+.workspace { flex:1; min-height:0; display:flex; overflow:hidden; }
+
+/* ── Sidebar ── */
+/* overflow-x clips wide content; overflow-y is visible so file-list scrollbar isn't cut */
+.sidebar { flex:none; display:flex; flex-direction:column; background:var(--surface); border-right:1px solid var(--edge); overflow-x:hidden; overflow-y:hidden; }
+.sidebar.collapsed { width:0 !important; border-right:0; }
+
+/* Sidebar header — normal mode */
+.side-head { height:55px; padding:0 15px; flex:none; display:flex; align-items:center; justify-content:space-between; color:var(--muted); font-family:"DM Mono"; font-size:10px; letter-spacing:.08em; }
+.side-head-actions { display:flex; align-items:center; gap:4px; }
+.side-head button, .select-mode-btn { font-size:21px; border:0; background:transparent; color:var(--text); }
+.select-mode-btn { font-size:15px; opacity:.55; }
+.select-mode-btn:hover { opacity:1; }
+
+/* Sidebar header — select mode */
+.select-head { height:55px; padding:0 13px; flex:none; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--edge); background:var(--soft); }
+.select-count { flex:1; font-size:11px; font-weight:600; font-family:"DM Mono"; }
+.select-actions { display:flex; gap:6px; }
+.select-delete-btn { border:0; background:transparent; color:#d64d36; font-size:11px; font-weight:600; padding:5px 8px; border-radius:3px; }
+.select-delete-btn:hover { background:#d64d361a; }
+.select-delete-btn:disabled { opacity:.3; cursor:not-allowed; }
+.select-cancel-btn { border:1px solid var(--edge); background:transparent; color:var(--text); font-size:11px; padding:5px 10px; border-radius:3px; }
+.select-cancel-btn:hover { border-color:var(--text); }
+
+/* File list — scrollable region; this is the ONLY element that scrolls in sidebar */
+.file-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 8px 8px;
+  /* Thin themed scrollbar (Firefox) */
+  scrollbar-width: thin;
+  scrollbar-color: var(--edge) transparent;
+}
+/* Thin themed scrollbar (Chrome/Safari/Edge) */
+.file-list::-webkit-scrollbar { width: 4px; }
+.file-list::-webkit-scrollbar-track { background: transparent; }
+.file-list::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 2px; }
+.file-list::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+.file-row { position:relative; min-height:50px; padding:8px; display:flex; gap:9px; align-items:center; border-radius:5px; cursor:pointer; }
+.file-row:hover,.file-row.selected { background:var(--soft); }
+.file-row.selecting { background:color-mix(in srgb,var(--accent) 8%,transparent); }
+
+/* Checkbox for select mode */
+.file-checkbox { font-size:14px; flex-shrink:0; color:var(--muted); line-height:1; }
+.file-checkbox.checked { color:var(--accent); }
+
+.file-info { flex:1; min-width:0; }
+.file-info b { display:block; font-size:11px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.file-info small { display:block; color:var(--muted); font-size:10px; margin-top:3px; }
+
+.more { border:0; background:transparent; color:var(--muted); font-size:12px; letter-spacing:1px; opacity:0; flex-shrink:0; padding:4px; border-radius:3px; }
+.file-row:hover .more { opacity:1; }
+.more:hover { background:var(--edge); color:var(--text); opacity:1; }
+
+/* Sync dots */
+.sync-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.sync-dot.pending { background:var(--muted); opacity:.35; }
+.sync-dot.syncing { background:var(--accent); animation:pulse .7s infinite alternate; }
+.sync-dot.synced { background:var(--synced); }
+
+/* Sidebar footer — fixed, never scrolls */
+.side-foot { flex:none; padding:14px 15px; border-top:1px solid var(--edge); display:flex; gap:9px; align-items:center; background:var(--surface); }
+.cloud-foot { color:var(--muted); font-size:17px; flex-shrink:0; }
+.side-foot b { display:block; font-size:10px; font-weight:600; }
+.side-foot small { display:block; color:var(--muted); font-size:9px; margin-top:2px; }
+
+/* ── Resize handle — flex sibling between sidebar and editor ── */
+.sidebar-resizer { width:5px; flex:none; cursor:col-resize; background:var(--edge); opacity:.7; transition:background .15s,opacity .15s; position:relative; z-index:3; }
+.sidebar-resizer::after { content:""; position:absolute; inset:-3px 0; }
+.sidebar-resizer:hover { background:var(--accent); opacity:.7; }
+
+/* ── Editor ── */
+.editor-pane { flex:1; min-width:0; display:flex; flex-direction:column; background:var(--editor); }
+.editor-header { height:55px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 28px; border-bottom:1px solid var(--edge); font-family:"DM Mono"; font-size:10px; color:var(--muted); }
+.editor-header span:first-child { color:var(--text); }
+.editor-wrap { flex:1; min-height:0; display:flex; overflow:hidden; padding:25px 0; }
+.line-numbers { width:66px; flex:none; user-select:none; padding-right:18px; text-align:right; color:#a9a9a4; font:13px/25px "DM Mono",monospace; }
+.line-numbers span { display:block; }
+.line-numbers .current { color:var(--accent); }
+textarea { resize:none; outline:0; border:0; color:var(--text); background:transparent; width:100%; padding:0 30px 40px 0; font:13px/25px "DM Mono",Consolas,monospace; caret-color:var(--accent); overflow:auto; }
+textarea::selection { background:#e85d2440; }
+
+/* ── Status bar ── */
+.statusbar { height:31px; flex:none; padding:0 15px; display:flex; align-items:center; justify-content:space-between; font:10px "DM Mono",monospace; color:var(--muted); background:var(--surface); border-top:1px solid var(--edge); }
+.statusbar>div { display:flex; gap:17px; align-items:center; }
+.save-status { width:6px; height:6px; background:#a5a5a0; border-radius:50%; display:inline-block; margin-right:6px; }
+.save-status.unsaved,.save-status.saving { background:var(--accent); }
+.save-status.saving { animation:pulse .7s infinite alternate; }
+.save-status.error { background:#d64d36; }
+.status-error-text { color:#d64d36; }
+
+/* ── Dropdown menu — rendered fixed, escapes all overflow containers ── */
+.file-menu { z-index:40; width:158px; padding:5px; border:1px solid var(--edge); border-radius:6px; background:var(--surface); box-shadow:0 8px 24px #0003; }
+.file-menu button { width:100%; padding:7px 9px; border:0; background:transparent; text-align:left; color:var(--text); font-size:11px; display:flex; gap:9px; border-radius:3px; }
+.file-menu button:hover { background:var(--soft); }
+.file-menu hr { border:0; border-top:1px solid var(--edge); margin:4px 0; }
+.file-menu .danger { color:#d64d36; }
+
+/* ── Dialogs ── */
+.dialog-backdrop { position:fixed; inset:0; z-index:50; display:grid; place-items:center; background:#0005; backdrop-filter:blur(2px); }
+.dialog { width:min(400px,calc(100vw - 36px)); padding:28px; background:var(--surface); border:1px solid var(--edge); border-radius:7px; box-shadow:0 18px 55px #0005; }
+.dialog-icon { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:#e85d241a; color:var(--accent); font-weight:800; flex-shrink:0; }
+.dialog h2 { font-size:17px; margin:18px 0 8px; }
+.dialog p { color:var(--muted); font-size:12px; line-height:1.6; margin:0 0 23px; }
+.dialog>div:last-child { display:flex; justify-content:flex-end; gap:8px; }
+.dialog button { border:1px solid var(--edge); border-radius:4px; padding:8px 12px; color:var(--text); background:transparent; font-size:11px; }
+.dialog button:hover { border-color:var(--text); }
+.delete-confirm { color:white !important; background:#d64d36 !important; border-color:#d64d36 !important; }
+.action-confirm { color:white !important; background:var(--accent) !important; border-color:var(--accent) !important; }
+.action-confirm:disabled { opacity:.4; cursor:not-allowed; }
+
+/* Rename dialog */
+.rename-icon { background:#e85d241a; }
+.rename-field { margin:4px 0 20px; }
+.rename-field input { width:100%; padding:9px 12px; border:1px solid var(--edge); border-radius:4px; background:var(--soft); color:var(--text); font:13px Manrope,sans-serif; outline:none; }
+.rename-field input:focus { border-color:var(--accent); }
+.rename-field input.has-error { border-color:#d64d36; }
+.field-error { color:#d64d36; font-size:10px; margin:5px 0 0; font-family:"DM Mono",monospace; }
+
+/* Drive dialog */
+.drive-dialog { width:min(430px,calc(100vw - 36px)); }
+.drive-icon { background:color-mix(in srgb,var(--synced) 15%,transparent); color:var(--synced); font-size:16px; }
+.drive-connecting { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px; margin:4px 0 20px; }
+.drive-status-row { display:flex; align-items:center; gap:11px; padding:11px 13px; border-radius:5px; background:var(--soft); margin-bottom:10px; }
+.drive-status-row b { display:block; font-size:11px; font-weight:600; }
+.drive-status-row small { display:block; color:var(--muted); font-size:10px; margin-top:2px; }
+.drive-status-icon { font-size:18px; flex-shrink:0; color:var(--muted); }
+.drive-status-icon.synced { color:var(--synced); }
+.drive-status-icon.syncing { color:var(--accent); }
+.drive-status-icon.error { color:#d64d36; }
+.sync-now-btn { margin-left:auto; border:1px solid var(--edge); border-radius:4px; padding:5px 10px; font-size:10px; background:transparent; color:var(--text); white-space:nowrap; }
+.sync-now-btn:hover { border-color:var(--text); }
+.sync-now-btn:disabled { opacity:.4; cursor:not-allowed; }
+.drive-folder-row { display:flex; align-items:center; gap:11px; padding:10px 13px; border:1px solid var(--edge); border-radius:5px; margin-bottom:12px; }
+.drive-folder-row>div { flex:1; }
+.drive-folder-row b { display:block; font-size:11px; font-weight:600; }
+.drive-folder-row small { display:block; color:var(--muted); font-size:10px; margin-top:2px; font-family:"DM Mono",monospace; }
+.link-btn { border:0; background:transparent; color:var(--muted); font-size:10px; text-decoration:underline; padding:0; }
+.link-btn:hover { color:var(--text); }
+.drive-notes-list { margin-bottom:16px; border:1px solid var(--edge); border-radius:5px; overflow:hidden; }
+.drive-note-row { display:flex; align-items:center; gap:9px; padding:8px 12px; font-size:11px; border-bottom:1px solid var(--edge); }
+.drive-note-row:last-child { border-bottom:0; }
+.drive-note-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sync-label { font-size:10px; font-family:"DM Mono",monospace; flex-shrink:0; }
+.sync-label.synced { color:var(--synced); }
+.sync-label.syncing { color:var(--accent); }
+.sync-label.pending { color:var(--muted); }
+.drive-actions { display:flex; justify-content:space-between; gap:8px; border-top:1px solid var(--edge); padding-top:16px; margin-top:4px; }
+.disconnect-btn { border:1px solid var(--edge); border-radius:4px; padding:8px 12px; color:#d64d36; background:transparent; font-size:11px; }
+.disconnect-btn:hover { border-color:#d64d36; }
+
+/* ── Animations ── */
+@keyframes pulse { to { opacity:.25; } }
+@keyframes spin { to { transform:rotate(360deg); } }
+.spin { display:inline-block; animation:spin .75s linear infinite; }
+
+/* ── Responsive ── */
+@media (max-width: 680px) {
+  .brand { width:54px; padding:0; justify-content:center; }
+  .brand>span:last-child,.save-btn span { display:none; }
+  .editor-header { padding:0 16px; }
+  .line-numbers { width:48px; padding-right:12px; }
+  textarea { padding-right:15px; }
+  .statusbar>div:last-child span:nth-child(n+3) { display:none; }
+  .tab { max-width:145px; }
+  .tab-name { overflow:hidden; text-overflow:ellipsis; }
+  .drive-notes-list { display:none; }
+}
