@@ -1,0 +1,52 @@
+version: "3.8"
+
+networks:
+  dev-network:
+    external: true   # da tao san bang: docker network create dev-network
+                      # (backend va mysql8 cung phai nam tren network nay)
+
+services:
+  noted-frontend:
+    build:
+      context: .
+      args:
+        # De trong = dung reverse proxy nginx (KHUYEN NGHI, xem nginx/default.conf.template)
+        # -> FE goi API bang duong dan tuong doi "/api/...", khong CORS, khong
+        # can build lai image khi doi backend URL.
+        #
+        # Chi dat gia tri neu ban CO Y dinh goi THANG toi backend, bo qua proxy
+        # (vd deploy FE va BE tren 2 domain/CDN khac nhau khong dung chung nginx):
+        #   VITE_API_BASE_URL: "http://localhost:8085"
+        VITE_API_BASE_URL: ""
+    container_name: noted-frontend
+    restart: unless-stopped
+    environment:
+      # Bien RUNTIME (doc luc container khoi dong qua envsubst trong nginx
+      # template) - dung de nginx reverse-proxy /api/** toi dung backend.
+      # BACKEND_HOST la TEN SERVICE cua backend trong docker-compose cua BAN
+      # (vd "noted-backend" - xem docker-compose.yml o repo backend, SEC-01..06),
+      # Docker DNS noi bo se tu resolve ten nay sang IP container that.
+      BACKEND_HOST: ${BACKEND_HOST:-noted-backend}
+      BACKEND_PORT: ${BACKEND_PORT:-8085}
+    ports:
+      - "85:85"
+    networks:
+      - dev-network
+
+# ==========================================================
+# CACH GOP VOI BACKEND (2 repo rieng - noted-backend va noteText):
+#
+# Cach 1 (khuyen nghi) - gop 2 file docker-compose lai khi chay:
+#   docker compose \
+#     -f ../noted-backend/docker-compose.yml \
+#     -f ./docker-compose.yml \
+#     up -d --build
+#
+# Cach 2 - copy nguyen khoi "services: noted-frontend" o tren dan vao CUOI
+#   file docker-compose.yml cua repo backend (dung 1 file compose duy nhat
+#   cho ca 2 project).
+#
+# Ca 2 cach deu YEU CAU: service backend trong compose kia PHAI ten la
+# "noted-backend" (hoac doi BACKEND_HOST cho khop), va PHAI cung khai bao
+# `networks: [dev-network]` giong nhu frontend o day.
+# ==========================================================
