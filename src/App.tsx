@@ -506,7 +506,6 @@ export default function App() {
         <section className="editor-pane">
           {active && (
             <>
-              <div className="editor-header"><span>{active.name}</span><span>Text document</span></div>
               <div className="editor-wrap">
                 <div className="line-numbers">
                   {lines.map((_, i) => <span className={cursorLine === i + 1 ? "current" : ""} key={i}>{i + 1}</span>)}
