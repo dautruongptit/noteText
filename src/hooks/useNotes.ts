@@ -1,22 +1,32 @@
-﻿import { useRef, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { Note, MenuPos } from "../types";
 import { uniqueName } from "../utils/uniqueName";
+import { loadSession, saveSession } from "../utils/session";
 
 const MENU_EST_H = 160;
+const PERSIST_DEBOUNCE_MS = 400;
 
-const initialNotes: Note[] = [
+const defaultNotes: Note[] = [
   { id: "welcome", name: "welcome.txt", content: "# Ghi chú của tôi\n\nChào mừng bạn đến với Noted.\n\n• Ctrl + S để lưu nhanh\n• Mọi thay đổi được tự động lưu\n• Mở nhiều ghi chú trong các tab", updated: new Date(Date.now() - 1000 * 60 * 3) },
   { id: "ideas", name: "ý tưởng.txt", content: "Ý tưởng tuần này\n\n1. Hoàn thiện trang giới thiệu\n2. Gửi bản thiết kế\n3. Đặt lịch review", updated: new Date(Date.now() - 1000 * 60 * 42) },
   { id: "readme", name: "README.txt", content: "NOTED / personal workspace\n\nKhông gian yên tĩnh để viết và lưu giữ điều quan trọng.", updated: new Date(Date.now() - 1000 * 60 * 60 * 5) },
 ];
+const defaultTabs = ["welcome", "ideas"];
+const defaultActiveId = "welcome";
 
 // markSaved: called after a fresh note is created (via newNote, or the
 // empty-fallback inside closeTab/deleteNote) so the save-status hook
 // resets to "saved" for the newly active, untouched note.
 export function useNotes(markSaved: () => void) {
-  const [notes, setNotes] = useState<Note[]>(initialNotes);
-  const [tabs, setTabs] = useState(["welcome", "ideas"]);
-  const [activeId, setActiveId] = useState("welcome");
+  // Restore the previous session (which notes existed, which tabs were open,
+  // which tab was active) once on first render. If nothing was saved before
+  // (first visit, or storage was cleared), fall back to the hardcoded demo
+  // notes exactly as before.
+  const [restored] = useState(() => loadSession());
+
+  const [notes, setNotes] = useState<Note[]>(restored?.notes ?? defaultNotes);
+  const [tabs, setTabs] = useState<string[]>(restored?.tabs ?? defaultTabs);
+  const [activeId, setActiveId] = useState(restored?.activeId ?? defaultActiveId);
   const [menuId, setMenuId] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState<MenuPos>({ top: 0, right: 0 });
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -24,6 +34,21 @@ export function useNotes(markSaved: () => void) {
 
   const active = notes.find((n) => n.id === activeId) ?? notes[0];
   const lines = active?.content.split("\n") ?? [""];
+
+  // Persist the working session (open tabs + active tab + note contents)
+  // on every change, debounced so continuous typing doesn't hit localStorage
+  // on every keystroke. This is what makes tabs/notes survive a page reload
+  // or the browser being closed and reopened later.
+  const persistTimer = useRef<number | null>(null);
+  useEffect(() => {
+    if (persistTimer.current !== null) window.clearTimeout(persistTimer.current);
+    persistTimer.current = window.setTimeout(() => {
+      saveSession(notes, tabs, activeId);
+    }, PERSIST_DEBOUNCE_MS);
+    return () => {
+      if (persistTimer.current !== null) window.clearTimeout(persistTimer.current);
+    };
+  }, [notes, tabs, activeId]);
 
   const openNote = (id: string, selectMode: boolean) => {
     if (selectMode) return;
